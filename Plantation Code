@@ -1,0 +1,312 @@
+#include <iostream>
+#include <string>
+#include <cstdlib>
+#include <ctime>
+
+using namespace std;
+
+struct Plantation {
+    int id;
+    std::string name;
+    int area;
+    int waterLevel;
+    int moistureLevel;
+    Plantation* next;
+};
+
+class PlantationList {
+private:
+    Plantation* head;
+
+public:
+    PlantationList() : head(nullptr) {}
+
+    void insert(int id, std::string name, int area, int waterLevel, int moistureLevel) {
+        Plantation* newPlantation = new Plantation;
+        newPlantation->id = id;
+        newPlantation->name = name;
+        newPlantation->area = area;
+        newPlantation->waterLevel = waterLevel;
+        newPlantation->moistureLevel = moistureLevel;
+        newPlantation->next = nullptr;
+
+        if (head == nullptr) {
+            head = newPlantation;
+        } else {
+            Plantation* temp = head;
+            while (temp->next != nullptr) {
+                temp = temp->next;
+            }
+            temp->next = newPlantation;
+        }
+    }
+
+    Plantation* searchPlantationById(int id) {
+        Plantation* temp = head;
+        while (temp != nullptr) {
+            if (temp->id == id) {
+                return temp;
+            }
+            temp = temp->next;
+        }
+        return nullptr;
+    }
+
+    void deletePlantationById(int id) {
+        if (head == nullptr) {
+            cout << "Plantation list is empty. Unable to delete." << endl;
+            return;
+        }
+
+        Plantation* current = head;
+        Plantation* prev = nullptr;
+
+        while (current != nullptr && current->id != id) {
+            prev = current;
+            current = current->next;
+        }
+
+        if (current == nullptr) {
+            cout << "Plantation with ID " << id << " not found." << endl;
+        } else {
+            if (prev == nullptr) {
+                head = current->next;
+            } else {
+                prev->next = current->next;
+            }
+
+            delete current;
+            cout << "Plantation with ID " << id << " deleted." << endl;
+        }
+    }
+
+    void modifyPlantation(int id) {
+        Plantation* temp = searchPlantationById(id);
+        if (temp != nullptr) {
+            cout << "Enter new data for Plantation " << id << endl;
+            cout << "Name: ";
+            cin.ignore(); // Ignore the newline character left in the buffer
+            getline(cin, temp->name);
+
+            cout << "Area: ";
+            cin >> temp->area;
+            cout << "Water Level: ";
+            cin >> temp->waterLevel;
+            cout << "Moisture Level: ";
+            cin >> temp->moistureLevel;
+            cout << "Plantation with ID " << id << " modified." << endl;
+
+            if (temp->waterLevel < 20 || temp->moistureLevel < 20) {
+                cout << "Warning: Water level or moisture level is below 20 for Plantation " << id << endl;
+            }
+        } else {
+            cout << "Plantation with ID " << id << " not found. Unable to modify." << endl;
+        }
+    }
+
+    void displayAllPlantations() {
+        if (head == nullptr) {
+            cout << "Plantation list is empty." << endl;
+            return;
+        }
+
+        cout << "All Plantations:" << endl;
+        Plantation* temp = head;
+        while (temp != nullptr) {
+            cout << "ID: " << temp->id << ", Name: " << temp->name << ", Area: " << temp->area
+                 << ", Water Level: " << temp->waterLevel << ", Moisture Level: " << temp->moistureLevel << endl;
+            temp = temp->next;
+        }
+    }
+
+    void displayStatistics() {
+        if (head == nullptr) {
+            cout << "Plantation list is empty. No statistics to display." << endl;
+            return;
+        }
+
+        int totalArea = 0;
+        int totalWaterLevel = 0;
+        int totalMoistureLevel = 0;
+        int numPlantations = 0;
+
+        Plantation* temp = head;
+        while (temp != nullptr) {
+            totalArea += temp->area;
+            totalWaterLevel += temp->waterLevel;
+            totalMoistureLevel += temp->moistureLevel;
+            numPlantations++;
+            temp = temp->next;
+        }
+
+        cout << "Statistics:" << endl;
+        cout << "Total number of plantations: " << numPlantations << endl;
+        cout << "Average area: " << (double)totalArea / numPlantations << endl;
+        cout << "Average water level: " << (double)totalWaterLevel / numPlantations << endl;
+        cout << "Average moisture level: " << (double)totalMoistureLevel / numPlantations << endl;
+    }
+
+    void displayWarnings() {
+        if (head == nullptr) {
+            cout << "Plantation list is empty. No warnings to display." << endl;
+            return;
+        }
+
+        cout << "Warnings:" << endl;
+        Plantation* temp = head;
+        while (temp != nullptr) {
+            if (temp->waterLevel < 20) {
+                cout << "Warning: Water level is below 20 for Plantation " << temp->id << ": " << temp->name << endl;
+            }
+            if (temp->moistureLevel < 20) {
+                cout << "Warning: Moisture level is below 20 for Plantation " << temp->id << ": " << temp->name << endl;
+            }
+            temp = temp->next;
+        }
+    }
+
+    ~PlantationList() {
+        Plantation* temp;
+        while (head != nullptr) {
+            temp = head;
+            head = head->next;
+            delete temp;
+        }
+    }
+};
+
+void displayMenu() {
+    cout << "\nMenu:" << endl;
+    cout << "1. Add Plantation" << endl;
+    cout << "2. Delete Plantation" << endl;
+    cout << "3. Modify Plantation" << endl;
+    cout << "4. Search Plantation" << endl;
+    cout << "5. Display All Plantations" << endl;
+    cout << "6. Display Statistics" << endl;
+    cout << "7. Display Warnings" << endl;  // New option
+    cout << "8. Exit" << endl;
+    cout << "Enter your choice: ";
+}
+
+int main() {
+    srand(time(0));
+
+    PlantationList plantationList;
+    int choice;
+
+    cout << "Welcome to Plantation System!" << endl;
+
+    do {
+        displayMenu();
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                {
+                    int numPlantations;
+                    cout << "Enter the number of plantations you want to manage: ";
+                    cin >> numPlantations;
+
+                    for (int i = 0; i < numPlantations; ++i) {
+                        int id;
+                        std::string name;
+                        int area;
+                        int waterLevel;
+                        int moistureLevel;
+
+                        cout << "Enter data for Plantation " << i + 1 << endl;
+                        cout << "ID: ";
+                        cin >> id;
+
+                        cout << "Name: ";
+                        cin.ignore(); // Ignore the newline character left in the buffer
+                        getline(cin, name);
+
+                        cout << "Area: ";
+                        cin >> area;
+                        cout << "Water Level: ";
+                        cin >> waterLevel;
+                        cout << "Moisture Level: ";
+                        cin >> moistureLevel;
+
+                        plantationList.insert(id, name, area, waterLevel, moistureLevel);
+
+                        if (waterLevel < 20 || moistureLevel < 20) {
+                            cout << "Warning: Water level or moisture level is below 20 for Plantation " << id << endl;
+                        }
+                    }
+                    cout << "Plantations added successfully." << endl;
+                }
+                break;
+
+            case 2:
+                {
+                    if (plantationList.searchPlantationById(1) == nullptr) {
+                        cout << "Plantation list is empty. Unable to delete." << endl;
+                    } else {
+                        int id;
+                        cout << "Enter ID of Plantation to delete: ";
+                        cin >> id;
+                        plantationList.deletePlantationById(id);
+                    }
+                }
+                break;
+
+            case 3:
+                {
+                    if (plantationList.searchPlantationById(1) == nullptr) {
+                        cout << "Plantation list is empty. Unable to modify." << endl;
+                    } else {
+                        int id;
+                        cout << "Enter ID of Plantation to modify: ";
+                        cin >> id;
+                        plantationList.modifyPlantation(id);
+                    }
+                }
+                break;
+
+            case 4:
+                {
+                    if (plantationList.searchPlantationById(1) == nullptr) {
+                        cout << "Plantation list is empty. Unable to search." << endl;
+                    } else {
+                        Plantation* found;
+                        int idToSearch;
+                        cout << "Enter ID of Plantation to search: ";
+                        cin >> idToSearch;
+                        found = plantationList.searchPlantationById(idToSearch);
+                        if (found != nullptr) {
+                            cout << "Plantation found: ID " << found->id << ", Name: " << found->name
+                                 << ", Area: " << found->area << ", Water Level: " << found->waterLevel
+                                 << ", Moisture Level: " << found->moistureLevel << endl;
+                        } else {
+                            cout << "Plantation with ID " << idToSearch << " not found." << endl;
+                        }
+                    }
+                }
+                break;
+
+            case 5:
+                plantationList.displayAllPlantations();
+                break;
+
+            case 6:
+                plantationList.displayStatistics();
+                break;
+
+            case 7:
+                plantationList.displayWarnings();  // New option
+                break;
+
+            case 8:
+                cout << "Exiting Plantation Management System." << endl;
+                break;
+
+            default:
+                cout << "Invalid choice. Please enter a valid option." << endl;
+                break;
+        }
+    } while (choice != 8);
+
+    return 0;
+}
